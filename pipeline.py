@@ -49,8 +49,28 @@ def generate_rag_answer(query: str, retrieved_chunk: str) -> str:
     return content if content is not None else "Error: Model returned empty content."
 
 if __name__ == "__main__":
-    pdf_file = "sample.pdf"
-    
+    # accepting a pdf file from the user 
+
+    while True:
+        pdf_file = input("Enter the file path").strip().strip('"').strip('"')
+        if not pdf_file:
+            print("[i] Please enter a file path")
+            continue
+        
+        if not os.path.isfile(pdf_file):
+            print(f"[!]file not found")
+            continue
+        if not pdf_file.lower().endswith(".pdf"):
+            print("[!] please provide a valid .pdf file")
+            continue
+
+
+        break
+
+
+
+
+
     # 1. Ingestion & Embedding Pipeline
     print("[*] Running ingestion & embedding pipeline...")
     raw_text = extract_text_from_pdf(pdf_file)
@@ -59,25 +79,42 @@ if __name__ == "__main__":
     
     # 2. Setup the embedding model for the query
     model = SentenceTransformer('all-MiniLM-L6-v2')
-    
-    # 3. Define your user question
-    query =  input("Ask a question about the document: ")
-    print(f"\n[*] User Query: '{query}'")
-    
-    # 4. Retrieval Phase (Cosine Similarity)
-    query_vector = model.encode(query)
-    scores = compute_cosine_similarity(query_vector, chunk_embeddings)
-    
-    best_match_idx = np.argmax(scores)
-    best_chunk = chunks[best_match_idx]
-    
-    print(f"[+] Retrieved Best Chunk (Index {best_match_idx} | Score: {scores[best_match_idx]:.4f})")
-    
-    # 5. Generation Phase (Gemini API Call)
-    answer = generate_rag_answer(query, best_chunk)
-    
+
+
     print("\n" + "="*40)
-    print("🤖 FINAL RAG GENERATED ANSWER (VIA GEMINI):")
-    print("="*40)
-    print(answer)
-    print("="*40)
+    print("ResumeRag is ready! type 'exit' or 'quit' to stop")
+    print("="*40 , "\n")
+    
+    while True:
+    
+   
+         query =  input("Ask a question about the document: ").strip()
+
+         if query.lower() in ['exit', 'quit']:
+             print("Exiting ResumeRag. Goodbye!")
+             break
+         
+         if not query:
+             print("Please enter a valid question.")
+             continue
+         
+
+        
+    
+         # 4. Retrieval Phase (Cosine Similarity)
+         query_vector = model.encode(query)
+         scores = compute_cosine_similarity(query_vector, chunk_embeddings)
+    
+         best_match_idx = np.argmax(scores)
+         best_chunk = chunks[best_match_idx]
+         
+         print(f"[+] Retrieved Best Chunk (Index {best_match_idx} | Score: {scores[best_match_idx]:.4f})")
+    
+         # 5. Generation Phase (Gemini API Call)
+         answer = generate_rag_answer(query, best_chunk)
+    
+         print("\n" + "="*40)
+         print("🤖 FINAL RAG GENERATED ANSWER (VIA GEMINI):")
+         print("="*40)
+         print(answer)
+         print("="*40)
